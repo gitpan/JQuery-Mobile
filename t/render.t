@@ -4,11 +4,11 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 57;
+plan tests => 64;
 
 use_ok('JQuery::Mobile');
 
-can_ok('JQuery::Mobile', qw(new head header footer popup page pages form listview collapsible collapsible_set navbar button controlgroup input select checkbox radio textarea));
+can_ok('JQuery::Mobile', qw(new head header footer table panel popup page pages form listview collapsible collapsible_set navbar button controlgroup input rangeslider select checkbox radio textarea));
 
 my $jquery_mobile = JQuery::Mobile->new(
 	config => {
@@ -58,6 +58,10 @@ my $popup = $jquery_mobile->popup(id => 'popup', content => 'Lorem ipsum dolor s
 like ($popup, qr/<div id="popup" data-role="popup">/, 'Popup Start');
 like ($popup, qr/<\/div>/, 'Popup End');
 
+
+my $panel = $jquery_mobile->panel(content => 'Panel Content');
+like ($panel, qr/<div data-role="panel">/, 'Panel');
+
 my $page = $jquery_mobile->page(
 	header => {
 		content => $jquery_mobile->button(href => '#', value => 'Home', icon => 'home', iconpos => 'notext') . '<h1>Main Title</h1>',
@@ -87,6 +91,25 @@ like ($pages, qr/<div id="page-1" data-role="page">/, 'Page 1');
 like ($pages, qr/<a data-icon="arrow-r" data-role="button" href="#page-2">Page 2<\/a>/, 'Page 1 Button');
 like ($pages, qr/<div id="page-2" data-role="page">/, 'Page 2');
 
+my $table = $jquery_mobile->table(
+	class => 'ui-responsive',
+		th => {
+		'First Name' => {priority => '1'}, 
+		'Last Name' => {priority => '2'}, 
+		'Email' => {priority => '3'}, 
+		'Gender' => {priority => '4'}, 
+	},
+	headers => ['First Name', 'Last Name', 'Email', 'Gender'],
+	rows => [
+		['John', 'Smith', 'john@work.com', 'Male'],
+		['Ann', 'Smith', 'ann@work.com', 'Female'],
+	],
+);
+
+like ($table, qr/<table data-role="table" class="ui-responsive">/, 'Table Start');
+like ($table, qr/<th data-priority="1">First Name<\/th>/, 'Table Head 1');
+like ($table, qr/<td>John<\/td>/, 'Table Data 1');
+
 my $form = $jquery_mobile->form(
 	title => 'The Form',
 	description => 'A description of the form',
@@ -102,6 +125,7 @@ my $form = $jquery_mobile->form(
 		{type => 'radio', name => 'gender', options => ['Male', 'Female']},
 		{type => 'checkbox', name => 'country', options => {'AU' => 'Austalia', 'US' => 'United States'}, value => 'AU'},
 		{type => 'select', name => 'heard', label => 'How did you hear about us', options => ['Facebook', 'Twitter', 'Google', 'Radio', 'Other']},
+		{type => 'rangeslider', name => 'range', mini => 'true', from => {label => 'Range', name => 'from', min => 18, max => 100}, to => {name => 'to', min => 18, max => 100}},
 	],
 	controlgroup => {type => 'horizontal'}, # use controlgroup to group the buttons, default to false, accepts "1" or a hashref
 	buttons => [
@@ -115,10 +139,13 @@ like ($form, qr/<p>A description of the form<\/p>/, 'Form Description');
 like ($form, qr/<div data-role="fieldcontain"><label for="first_name"><strong>First Name\*<\/strong>:<\/label><input id="first_name" name="first_name" required="required" type="text" value="" \/><\/div>/, 'Form First Name');
 like ($form, qr/<div data-role="fieldcontain"><label for="avatar">Avatar:<\/label><input id="avatar" name="avatar" type="file" value="" accept="image\/\*" capture="camera" \/><\/div>/, 'Form Avatar');
 like ($form, qr/<div data-role="fieldcontain"><label for="comment">Comment:<\/label><textarea id="comment" name="comment" rows="8" cols="40"><\/textarea><\/div>/, 'Form Comment');
-like ($form, qr/<div data-role="fieldcontain"><fieldset data-role="controlgroup"><legend>Gender:<\/legend><input type="radio" name="gender" id="gender-male" value="Male" \/><label for="gender-male">Male<\/label><input type="radio" name="gender" id="gender-female" value="Female" \/><label for="gender-female">Female<\/label><\/fieldset><\/div>/, 'Form Gender');
-like ($form, qr/<div data-role="fieldcontain"><fieldset data-role="controlgroup"><legend>Country:<\/legend><input type="checkbox" name="country" id="country-au" value="AU" checked="checked" \/><label for="country-au">Austalia<\/label><input type="checkbox" name="country" id="country-us" value="US" \/><label for="country-us">United States<\/label><\/fieldset><\/div>/, 'Form Country');
+like ($form, qr/<legend>Gender:<\/legend><input type="radio" name="gender" id="gender-male" value="Male" \/><label for="gender-male">Male<\/label><input type="radio" name="gender" id="gender-female" value="Female" \/><label for="gender-female">Female<\/label>/, 'Form Gender');
+like ($form, qr/<legend>Country:<\/legend><input type="checkbox" name="country" id="country-au" value="AU" checked="checked" \/><label for="country-au">Austalia<\/label><input type="checkbox" name="country" id="country-us" value="US" \/><label for="country-us">United States<\/label>/, 'Form Country');
 like ($form, qr/<div data-role="fieldcontain"><label for="heard">How did you hear about us:<\/label><select name="heard" id="heard"><option value="Facebook" >Facebook<\/option><option value="Twitter" >Twitter<\/option><option value="Google" >Google<\/option><option value="Radio" >Radio<\/option><option value="Other" >Other<\/option><\/select><\/div>/, 'Form Heard from');
 like ($form, qr/<div data-role="controlgroup" data-type="horizontal">/, 'Form Controlgroup');
+like ($form, qr/<div data-role="rangeslider" name="range" data-mini="true">/, 'Rangeslider');
+like ($form, qr/<label for="from">Range:<\/label><input id="from" max="100" min="18" name="from" type="range" value="" \/>/, 'Rangeslider From');
+like ($form, qr/<label for="to">To:<\/label><input id="to" max="100" min="18" name="to" type="range" value="" \/>/, 'Rangeslider To');
 like ($form, qr/<input data-icon="arrow-r" data-role="button" data-theme="b" type="submit" value="Submit"\/>/, 'Form Submit Button');
 like ($form, qr/<a data-icon="delete" data-role="button" href="#">Cancel<\/a>/, 'Form Cancel Button');
 like ($form, qr/<\/form>/, 'Form End');
